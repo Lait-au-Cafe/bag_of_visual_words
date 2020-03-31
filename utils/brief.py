@@ -3,6 +3,7 @@ import os
 
 import numpy as np
 import cv2
+#from bitarray import bitarray
 
 class BriefDescriptorExtractor:
     PATCH_SIZE: typing.ClassVar[int] = 48
@@ -50,12 +51,12 @@ class BriefDescriptorExtractor:
         kps = cv2.KeyPoint_convert(keypoints)
 
         # Filter keypoints
-        print(f"kps: {kps.shape}")
+        #print(f"kps: {kps.shape}")
         kps = kps[np.all(np.append(
             kps >= np.array([0, 0]) + BriefDescriptorExtractor.PATCH_SIZE / 2, 
             kps <  np.array(image.shape) - 1 - BriefDescriptorExtractor.PATCH_SIZE / 2, 
             axis=1), axis=1)]
-        print(f"kps: {kps.shape}")
+        #print(f"kps: {kps.shape}")
 
         descs = np.empty((0, 256), dtype=np.bool)
         for kp in kps:
@@ -66,6 +67,7 @@ class BriefDescriptorExtractor:
         #print(f"{descs.shape}: \n{descs}")
 
         keypoints = cv2.KeyPoint_convert(kps.reshape(-1, 1, 2))
+        #descs = [bitarray(list(desc)) for desc in descs]
         return (keypoints, descs)
 
 
