@@ -1,4 +1,4 @@
-from typing import Tuple, List
+from typing import Tuple, List, Dict
 
 import numpy as np
 from bitarray import bitarray
@@ -6,12 +6,20 @@ import bitarray.util as ba
 
 from . import kmedian
 from . import logger
-from .core import bd_distance
+from .core import bd_distance, bowv_normalize
 
 class Tree:
     children: List['Tree']
-    weight: float = None
     centroid: np.ndarray
+    
+    # For leaf nodes. 
+    #word: int = None
+    weight: float = None
+
+    # The list of the pair (image, bow-vector_i) 
+    # image: contains descriptor which corresponds to this node. 
+    # bow-vector: the value of bow vector of the image which corresponds to this node
+    inverse_index: List[Tuple[np.ndarray, float]]
 
     def __init__(self, centroid):
         self.centroid = centroid
@@ -110,9 +118,46 @@ class VacabularyTree:
             #logger.log(self, f"Ni = {Ni}")
             leaf.weight = np.log(N / Ni)
     
-    def calc_bowv(self, features: np.ndarray) -> np.ndarray:
-        return np.array([])
+    def calc_bowv(self, features: np.ndarray) -> Dict[int, float]:
+        # Extract descriptors from features. 
+        _kps, descriptors = features
 
-    def save(self):
-        # Hey someone, please implement this part. 
+        # Calc un-normalized tf(-idf). 
+        bowv = dict()
+        for desc in descriptors:
+            leaf = self.tree.reach(desc)
+            word = ba.ba2hex(bitarray(list(leaf.centroid)))
+            bowv[word] = bowv.get(word, default=0) + leaf.weight
+
+        # normalize tf
+        #num, _L = descriptors.shape
+        #for k in bowv.keys(): bowv[k] /= num
+
+        # normalize bow vector
+        bowv_normalize(bowv)
+
+        return bowv
+
+    # Compare two bag-of-words vectors. 
+    # returns [0..1]. 0: different, 1: similar
+    def match(self, a: Dict[int, float], b: Dict[int, float]) -> float:
+        score = 0
+        common_words = set(a.keys()) & set(b.keys())
+        for word in common_words:
+            #score += abs(a[word] - b[word]) - abs(a[word]) - abs(b[word])
+            score += abs(a[word]) + abs(b[word]) - abs(a[word] - b[word])
+        return 0.5 * score
+
+    def from_json(self):
         pass
+
+    def to_json(self):
+        pass
+
+    def load(self, filename: str) -> bool:
+        return False
+
+    def save(self, filename: str) -> bool:
+        # Hey someone, please implement this part. 
+        # Use json?
+        return False

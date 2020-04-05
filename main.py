@@ -52,6 +52,9 @@ for id in itertools.count(0):
 #======================================
 #kw, lw = 10, 6
 kw, lw = 10, 3
-vocab_tree = utils.vocabularytree.VacabularyTree(kw, lw)
-vocab_tree.build(frame_features)
+voc_tree = utils.vocabularytree.VacabularyTree(kw, lw)
+voc_tree.build(frame_features)
 
+#======================================
+# Test Vocabulary Tree
+#======================================
