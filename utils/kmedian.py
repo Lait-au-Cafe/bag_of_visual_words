@@ -6,9 +6,7 @@ from bitarray import bitarray
 import bitarray.util as ba
 
 from . import logger
-
-def insert(arr: List[np.ndarray], idx, d):
-    arr[idx] = np.append(arr[idx], d.reshape(1, 256), axis=0)
+from .core import bd_distance
 
 class KMedian01:
     k: int
@@ -17,7 +15,8 @@ class KMedian01:
         self.k = k
 
     def distance(self, a: np.ndarray, b: np.ndarray) -> int:
-        return (bitarray(list(a)) ^ bitarray(list(b))).count()
+        return bd_distance(a, b)
+        #return (bitarray(list(a)) ^ bitarray(list(b))).count()
 
     def median(self, data: np.ndarray) -> np.ndarray:
         num, _L = data.shape
@@ -39,19 +38,8 @@ class KMedian01:
         _num, L = data.shape
         clusters = [np.empty((0, L))] * self.k
         for d in data:
-#            min_dist = np.nan
-#            cluster_id = 0
-#            for i, c in enumerate(centroids):
-#                dist = self.distance(d, c)
-#                if not (min_dist <= dist):
-#                    min_dist = dist
-#                    cluster_id = i
-#            clusters[cluster_id] = np.append(clusters[cluster_id], d.reshape(1, 256), axis=0)
-
             cluster_id = np.apply_along_axis(lambda cent: self.distance(d, cent), axis=1, arr=centroids).argmin()
             clusters[cluster_id] = np.append(clusters[cluster_id], d.reshape(1, 256), axis=0)
-
-#        np.apply_along_axis(lambda desc: insert(clusters, np.apply_along_axis(lambda cent: self.distance(desc, cent), axis=1, arr=centroids).argmin(), desc), axis=1, arr=data)
 
         new_centroids = np.empty_like(centroids)
         for i, cluster in enumerate(clusters):
@@ -92,12 +80,6 @@ class KMedian01:
         for _ in range(self.k - 1):
             weights = []
             for d in data:
-#                min_dist = np.nan
-#                for s in seeds:
-#                    dist = self.distance(s, d)
-#                    if not (min_dist <= dist):
-#                        min_dist = dist
-
                 min_dist = np.apply_along_axis(lambda s: self.distance(d, s), axis=1, arr=seeds).min()
                 weights.append(min_dist ** 2)
 

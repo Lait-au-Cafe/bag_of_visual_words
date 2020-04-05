@@ -14,7 +14,12 @@ dataset_root_dir = "./input/Scene"
 #======================================
 # Extract Features
 #======================================
-frame_features = []
+#from typing import Tuple, List
+#TDescriptor = np.ndarray
+#TFeatures = Tuple[List[cv2.KeyPoint], List[TDescriptor]]
+
+# [frame -> features] map
+frame_features = [] # : List[TFeatures]
 for id in itertools.count(0):
     #print(f"#{id}")
     frame = cv2.imread(f"{dataset_root_dir}/frame{id:04}.png", cv2.IMREAD_GRAYSCALE)
@@ -45,16 +50,8 @@ for id in itertools.count(0):
 #======================================
 # Construct Vocabulary Tree
 #======================================
-#descriptors = np.empty((0, 256))
-#for kps, descs in frame_features:
-#    descriptors = np.append(descriptors, descs, axis=0)
 #kw, lw = 10, 6
 kw, lw = 10, 3
 vocab_tree = utils.vocabularytree.VacabularyTree(kw, lw)
 vocab_tree.build(frame_features)
-#k_median = utils.kmedian.KMedian01(kw)
-#centroids, clusters = k_median.run(descriptors)
-#for i, (cntr, clster) in enumerate(zip(centroids, clusters)):
-#    print(f"Cluster #{i} -> {clster.shape[0]}")
-#    #print(f"\tCentroid: {bitarray(list(cntr)).to01()}")
-#    #print(f"\tNum of data: {clster.shape[0]}")
+
